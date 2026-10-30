@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Volunteer Opportunity Finder</title>
+<style>
+:root{--bg:#f6f7f4;--card:#fff;--ink:#1d2a24;--mut:#5f6d66;--line:#dfe4de;--brand:#1f7a5a;--brandink:#fff;--warn:#b4531a;--soft:#e6f2ec;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121715;--card:#1b231f;--ink:#e8eee9;--mut:#9aa8a0;--line:#2c3832;--brand:#3fb386;--brandink:#06150f;--warn:#e08a52;--soft:#1f3329;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#121715;--card:#1b231f;--ink:#e8eee9;--mut:#9aa8a0;--line:#2c3832;--brand:#3fb386;--brandink:#06150f;--warn:#e08a52;--soft:#1f3329;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{padding:20px 16px 8px;max-width:960px;margin:auto}
+h1{margin:0;font-size:22px}
+.sub{color:var(--mut);margin:2px 0 12px}
+.stats{display:flex;gap:8px;flex-wrap:wrap}
+.stat{background:var(--soft);border-radius:10px;padding:8px 14px}
+.stat b{display:block;font-size:20px}
+nav{display:flex;gap:6px;max-width:960px;margin:8px auto;padding:0 16px;overflow-x:auto}
+nav button{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 14px;border-radius:20px;cursor:pointer;white-space:nowrap;font:inherit}
+nav button.on{background:var(--brand);color:var(--brandink);border-color:var(--brand)}
+main{max-width:960px;margin:auto;padding:8px 16px 40px}
+.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:14px}
+input,select,textarea{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font:inherit}
+label{display:block;font-size:13px;color:var(--mut);margin-bottom:3px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.card{background:color-mix(in srgb,var(--card) 90%,transparent);backdrop-filter:blur(6px);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:6px}
+.card h3{margin:0;font-size:16px}
+.tag{display:inline-block;background:var(--soft);color:var(--brand);border-radius:12px;padding:1px 9px;font-size:12px;margin-right:4px}
+.meta{color:var(--mut);font-size:13px}
+.bar{height:6px;background:var(--line);border-radius:4px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--brand)}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto;padding-top:6px}
+.btn{border:0;background:var(--brand);color:var(--brandink);padding:8px 14px;border-radius:8px;cursor:pointer;font:inherit}
+.btn.alt{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+form.panel,.panel{background:color-mix(in srgb,var(--card) 90%,transparent);backdrop-filter:blur(6px);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
+.f2{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:10px}
+dialog{border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);max-width:420px;width:92%}
+dialog::backdrop{background:rgba(0,0,0,.5)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
+.wrap{overflow-x:auto}
+.empty{color:var(--mut);text-align:center;padding:30px}
+#bg{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+header,nav,main{position:relative;z-index:1}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;opacity:0;pointer-events:none;transition:.25s;z-index:50}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+#xt{font:12px/1.4 ui-monospace,Consolas,monospace;margin-bottom:10px}
+.warn{color:var(--warn)}
+:root{--g1:#a8efcf;--g2:#a9d4ff;--g3:#ffe39a;--g4:#ffb8cf;--g5:#c3adff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--g1:#0d4a35;--g2:#10305a;--g3:#4a3a0c;--g4:#4a1a30;--g5:#2c1a5a}}
+:root[data-theme="dark"]{--g1:#0d4a35;--g2:#10305a;--g3:#4a3a0c;--g4:#4a1a30;--g5:#2c1a5a}
+body{min-height:100vh;background:linear-gradient(120deg,var(--g1),var(--g2),var(--g3),var(--g4),var(--g5),var(--g1));background-size:500% 500%;background-attachment:fixed;animation:shift var(--dur,14s) ease-in-out infinite}
+@keyframes shift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+#bg{display:none}
+:root[data-anim="off"] body{animation:none}
+.chip{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:6px 12px;border-radius:16px;cursor:pointer;font:inherit}
+.chip.on{background:var(--brand);color:var(--brandink);border-color:var(--brand)}
+.sw{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+#cb h4{margin:14px 0 6px;font-size:14px;color:var(--mut)}
+.hero{text-align:center;padding:26px 16px}.hero h2{margin:0 0 6px;font-size:26px}.hero .row{justify-content:center}
+h3.sec{margin:22px 0 10px}
+.num{width:30px;height:30px;border-radius:50%;background:var(--brand);color:var(--brandink);display:grid;place-items:center;font-weight:700}
+.tags{display:flex;flex-wrap:wrap;gap:4px}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<header>
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h1>🤝 Volunteer Opportunity Finder</h1><div style="display:flex;gap:6px"><button type="button" id="th" class="btn alt" style="background:var(--card);white-space:nowrap" title="Switch theme"></button><button type="button" id="cu" class="btn alt" style="background:var(--card);white-space:nowrap">🎨 Customize</button></div></div>
+  <p class="sub">Volunteer near you, in your free time, and track your social impact.</p>
+  <div class="stats" id="stats"></div>
+</header>
+<nav id="nav">
+  <button data-t="home" class="on">Home</button>
+  <button data-t="find">Find opportunities</button>
+  <button data-t="near">📍 Nearby</button>
+  <button data-t="free">⏱️ Free time</button>
+  <button data-t="report">🗑️ Report</button>
+  <button data-t="team">👥 Teams</button>
+  <button data-t="ai">✨ AI picks</button>
+  <button data-t="me">🏆 Profile &amp; rewards</button>
+  <button data-t="post">Post opportunity</button>
+  <button data-t="vols">Volunteers</button>
+  <button data-t="mine">Registrations &amp; hours</button>
+  <button data-t="hist">🕘 History</button>
+</nav>
+<main id="main"></main>
+
+<dialog id="cd"><p id="cm" style="margin-top:0"></p><div class="row"><button type="button" class="btn" id="cy">Yes, continue</button><button type="button" class="btn alt" id="cn">Cancel</button></div></dialog>
+<dialog id="xd"><h3 style="margin-top:0">Export CSV</h3><textarea id="xt" rows="10" readonly></textarea><div class="row"><button type="button" class="btn" id="xc">Copy to clipboard</button><button type="button" class="btn alt" id="xx">Close</button></div></dialog>
+<dialog id="cs"><h3 style="margin-top:0">Customize</h3><div id="cb"></div><div class="row" style="margin-top:14px"><button type="button" class="btn alt" id="cr">Reset</button><button type="button" class="btn" id="cc">Done</button></div></dialog>
+<dialog id="pd"><h3 style="margin-top:0">Submit proof of participation</h3><label>What did you do? *</label><textarea id="pn" rows="3"></textarea><label style="margin-top:8px">Photo (optional)</label><input id="pi" type="file" accept="image/*"><div class="row"><button type="button" class="btn" id="pok">Submit proof</button><button type="button" class="btn alt" id="px">Cancel</button></div></dialog>
+<dialog id="vd"><h3 id="vt" style="margin-top:0"></h3><div class="f2" style="grid-template-columns:1fr"><div><label>Full name *</label><input id="vn"></div><div><label>Email *</label><input id="ve" type="email"></div><div><label>Phone</label><input id="vp"></div><div><label>Area</label><select id="vc"></select></div><div><label>Skills</label><input id="vs" placeholder="Teaching, driving, first aid…"></div><div><label>Availability</label><select id="va"></select></div><div><label>Main interest</label><select id="vi"></select></div></div><p id="vm" class="warn"></p><div class="row"><button type="button" class="btn" id="vok">Save volunteer</button><button type="button" class="btn alt" id="vx">Cancel</button></div></dialog>
+<div id="toast" role="status"></div>
+<dialog id="dlg">
+  <form method="dialog" id="sf" style="margin:0">
+    <h3 id="dt" style="margin-top:0"></h3>
+    <div class="f2" style="grid-template-columns:1fr">
+      <div><label>Full name *</label><input id="sn"></div>
+      <div><label>Email *</label><input id="se" type="email"></div>
+      <div><label>Phone</label><input id="sp"></div>
+    </div>
+    <p id="sm" class="warn"></p>
+    <div class="row"><button type="button" class="btn" id="sok">Confirm registration</button><button type="button" class="btn alt" id="sx">Cancel</button></div>
+  </form>
+</dialog>
+
+<script>
+const CATS=["Education","Environment","Health","Food & Hunger","Animals","Community","Disaster Relief","Elderly Care","Events","Tech & Skills"];
+const KEY="vof.v1";
+let S={opps:[],vols:[]};
+let tab="home",F={q:"",cat:"",mode:"",when:"upcoming",sort:"date"},cur=null;
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const iso=d=>d.toISOString().slice(0,10);
+const plus=n=>{const d=new Date();d.setDate(d.getDate()+n);return iso(d)};
+const today=()=>iso(new Date());
+const uid=()=>Math.random().toString(36).slice(2,9);
+
+function load(){
+  try{const r=localStorage.getItem(KEY);if(r){S=JSON.parse(r);return}}catch(e){}
+  S={opps:[
+    {id:uid(),title:"Beach clean-up drive",org:"Green Shore Trust",cat:"Environment",desc:"Collect and sort plastic waste along the shoreline. Gloves and bags provided.",date:plus(5),start:"07:00",end:"10:00",loc:"Marina Beach, Chennai",mode:"In person",needed:25,skills:"None needed",contact:"hello@greenshore.org",signups:[]},
+    {id:uid(),title:"Weekend maths tutoring",org:"Learn Together",cat:"Education",desc:"Help school students with maths homework and exam prep.",date:plus(9),start:"10:00",end:"12:00",loc:"Online (Google Meet)",mode:"Remote",needed:10,skills:"Good at maths",contact:"tutor@learntogether.org",signups:[]},
+    {id:uid(),title:"Community food packing",org:"Meals for All",cat:"Food & Hunger",desc:"Pack and distribute meal kits to families in need.",date:plus(14),start:"09:00",end:"13:00",loc:"Community Hall, T. Nagar",mode:"In person",needed:15,skills:"None needed",contact:"packing@mealsforall.org",signups:[]},
+    {id:uid(),title:"Evening sapling planting",org:"Adyar Greens",cat:"Environment",desc:"Plant and water native saplings along the river bank.",date:plus(0),start:"16:00",end:"18:00",loc:"Adyar, Chennai",mode:"In person",needed:20,skills:"None needed",contact:"plant@adyargreens.org",signups:[]},
+    {id:uid(),title:"Elderly home visit & storytelling",org:"Silver Smiles",cat:"Elderly Care",desc:"Spend time, play games and read with senior residents.",date:plus(3),start:"17:00",end:"19:00",loc:"Anna Nagar, Chennai",mode:"In person",needed:8,skills:"Patience, kindness",contact:"visit@silversmiles.org",signups:[]},
+    {id:uid(),title:"Digital literacy for seniors",org:"Tech4All",cat:"Tech & Skills",desc:"Teach phone, UPI and video-call basics.",date:plus(7),start:"15:00",end:"16:30",loc:"Velachery, Chennai",mode:"In person",needed:6,skills:"Phone and UPI basics",contact:"hi@tech4all.org",signups:[]},
+    {id:uid(),title:"Health & blood donation camp",org:"CareFirst",cat:"Health",desc:"Help with registration, guidance and refreshments.",date:plus(11),start:"08:00",end:"13:00",loc:"Guindy, Chennai",mode:"In person",needed:12,skills:"First aid",contact:"camp@carefirst.org",signups:[]}
+  ],vols:[
+    {name:"Priya S",email:"priya@demo.in",city:"Adyar",skills:"Teaching, maths",avail:"Weekends",int:"Education"},
+    {name:"Arun K",email:"arun@demo.in",city:"Guindy",skills:"First aid, driving",avail:"Anytime",int:"Health"},
+    {name:"Meera R",email:"meera@demo.in",city:"Anna Nagar",skills:"Patience, storytelling",avail:"Evenings",int:"Elderly Care"},
+    {name:"Karthik V",email:"karthik@demo.in",city:"Marina Beach",skills:"Gardening",avail:"Weekdays",int:"Environment"}
+  ],reports:[
+    {id:uid(),place:"Velachery lake edge",type:"Illegal dumping",sev:"High",desc:"Construction debris and plastic dumped near the lake.",photo:"",date:plus(-2),by:"Community member",up:3,status:"Open"},
+    {id:uid(),place:"T. Nagar bus stop",type:"Overflowing bin",sev:"Medium",desc:"Bin not cleared for days.",photo:"",date:plus(-1),by:"Community member",up:1,status:"Open"}
+  ]};
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+const hrs=o=>{const[a,b]=[o.start,o.end].map(t=>{const[h,m]=(t||"0:0").split(":");return +h+ +m/60});return Math.max(0,b-a)};
+const fmtD=d=>new Date(d+"T00:00").toLocaleDateString(undefined,{weekday:"short",day:"numeric",month:"short",year:"numeric"});
+
+function stats(){
+  const up=S.opps.filter(o=>o.date>=today()).length;
+  const spots=S.opps.filter(o=>o.date>=today()).reduce((a,o)=>a+Math.max(0,o.needed-o.signups.length),0);
+  $("#stats").innerHTML=[["Upcoming",up],["Open spots",spots],["Volunteers",S.vols.length]].map(([l,v])=>`<div class="stat"><b>${v}</b>${l}</div>`).join("");
+}
+
+function render(){
+  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.t===tab));
+  stats();
+  ({home:rHome,find:rFind,near:rNear,free:rFree,report:rReport,team:rTeam,ai:rAI,me:rMe,post:rPost,vols:rVols,mine:rMine,hist:rHist})[tab]();
+}
+
+function rFind(){
+  $("#main").innerHTML=`<div class="filters">
+  <input id="q" placeholder="Search title, org, location…" value="${esc(F.q)}">
+  <select id="c"><option value="">All categories</option><option value="@env" ${F.cat==="@env"?"selected":""}>🌿 Environmental care</option><option value="@soc" ${F.cat==="@soc"?"selected":""}>🤲 Social service</option>${CATS.map(c=>`<option ${F.cat===c?"selected":""}>${c}</option>`).join("")}</select>
+  <select id="m"><option value="">In person &amp; remote</option><option ${F.mode==="In person"?"selected":""}>In person</option><option ${F.mode==="Remote"?"selected":""}>Remote</option></select>
+  <select id="w"><option value="upcoming" ${F.when==="upcoming"?"selected":""}>Upcoming</option><option value="all" ${F.when==="all"?"selected":""}>All dates</option><option value="week" ${F.when==="week"?"selected":""}>Next 7 days</option></select>
+  </div><div class="row" style="margin:0 0 12px"><button class="btn alt" id="exp">Export CSV</button></div><div class="grid" id="list"></div>`;
+  $("#q").oninput=e=>{F.q=e.target.value;list()};
+  $("#c").onchange=e=>{F.cat=e.target.value;list()};
+  $("#m").onchange=e=>{F.mode=e.target.value;list()};
+  $("#w").onchange=e=>{F.when=e.target.value;list()};
+  $("#exp").onclick=exportCsv;
+  list();
+}
+function list(){
+  const q=F.q.toLowerCase(),t=today(),wk=plus(7);
+  const r=S.opps.filter(o=>(!q||[o.title,o.org,o.loc,o.desc,o.skills].join(" ").toLowerCase().includes(q))&&catOK(o)&&(!F.mode||o.mode===F.mode)&&(F.when==="all"||(F.when==="upcoming"&&o.date>=t)||(F.when==="week"&&o.date>=t&&o.date<=wk))).sort((a,b)=>a.date.localeCompare(b.date));
+  $("#list").innerHTML=r.length?r.map(o=>card(o)).join(""):`<div class="empty" style="grid-column:1/-1">No matching opportunities. Try changing filters or post a new one.</div>`;
+  $("#list").querySelectorAll("[data-su]").forEach(b=>b.onclick=()=>openSU(b.dataset.su));
+  $("#list").querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{ask("Delete this opportunity?",()=>{S.opps=S.opps.filter(o=>o.id!==b.dataset.del);save();render();toast("Opportunity deleted")})});
+}
+function card(o,x=""){
+  const left=o.needed-o.signups.length,pct=Math.min(100,o.signups.length/o.needed*100),past=o.date<today();
+  return `<div class="card"><div><span class="tag">${esc(o.cat)}</span><span class="tag">${esc(o.mode)}</span></div>
+  <h3>${esc(o.title)}</h3><div class="meta">${esc(o.org)}</div>${x}
+  <div>${esc(o.desc)}</div>
+  <div class="meta">📅 ${fmtD(o.date)}<br>🕒 ${esc(o.start)}–${esc(o.end)} (${hrs(o).toFixed(1)} h)<br>📍 ${esc(o.loc)}<br>🧰 ${esc(o.skills||"None needed")}<br>✉️ ${esc(o.contact)}</div>
+  <div class="bar"><i style="width:${pct}%"></i></div><div class="meta">${o.signups.length}/${o.needed} registered · ${left>0?left+" spots left":"Full"}</div>
+  <div class="row"><button class="btn" data-su="${o.id}" ${left<=0||past?"disabled":""}>${past?"Past":left<=0?"Full":"Register"}</button><button class="btn alt" data-del="${o.id}">Delete</button></div></div>`;
+}
+
+function rPost(){
+  $("#main").innerHTML=`<form class="panel" id="pf"><h3 style="margin-top:0">Post a volunteer opportunity</h3>
+  <div class="f2"><div><label>Title *</label><input name="title" required></div><div><label>Organisation *</label><input name="org" required></div>
+  <div><label>Type of work *</label><select name="cat">${CATS.map(c=>`<option>${c}</option>`).join("")}</select></div>
+  <div><label>Mode</label><select name="mode"><option>In person</option><option>Remote</option></select></div>
+  <div><label>Date *</label><input type="date" name="date" min="${today()}" required></div>
+  <div><label>Start time *</label><input type="time" name="start" required></div>
+  <div><label>End time *</label><input type="time" name="end" required></div>
+  <div><label>Volunteers needed *</label><input type="number" name="needed" min="1" value="10" required></div>
+  <div><label>Location / link *</label><input name="loc" required></div>
+  <div><label>Skills required</label><input name="skills" placeholder="e.g. First aid, teaching"></div>
+  <div><label>Contact (email/phone) *</label><input name="contact" required></div></div>
+  <label>Description &amp; what to bring</label><textarea name="desc" rows="3"></textarea>
+  <div class="row"><button class="btn">Publish opportunity</button></div></form>`;
+  $("#pf").onsubmit=e=>{e.preventDefault();const d=Object.fromEntries(new FormData(e.target));
+    if(d.end<=d.start){toast("End time must be after start time.");return}
+    S.opps.push({id:uid(),...d,needed:+d.needed,signups:[]});save();tab="find";render();toast("Opportunity published")};
+}
+
+function rVols(){
+  $("#main").innerHTML=`<div class="row" style="margin:0 0 12px"><button class="btn" id="av">➕ Add volunteer</button></div><div class="panel wrap"><h3 style="margin-top:0">All volunteers (${S.vols.length})</h3>${S.vols.length?`<table><tr><th>Name</th><th>Contact</th><th>Skills / interest</th><th>Availability</th><th>Hours</th><th></th></tr>${S.vols.map(v=>`<tr><td>${esc(v.name)}<div class="meta">${esc(v.city||"")}</div></td><td>${esc(v.email)}<div class="meta">${esc(v.phone||"")}</div></td><td>${esc(v.skills||"—")}<div class="meta">${esc(v.int||"")}</div></td><td>${esc(v.avail||"—")}</td><td>${volHours(v.email).toFixed(1)}</td><td><button class="btn alt" data-ed="${esc(v.email)}">Edit</button> <button class="btn alt" data-rm="${esc(v.email)}">Remove</button></td></tr>`).join("")}</table>`:`<div class="empty">No volunteers yet. Add the first one.</div>`}</div>`;
+  $("#av").onclick=()=>openVol();
+  document.querySelectorAll("[data-ed]").forEach(b=>b.onclick=()=>openVol(b.dataset.ed));
+  document.querySelectorAll("[data-rm]").forEach(b=>b.onclick=()=>{ask("Remove this volunteer and their registrations?",()=>{const m=b.dataset.rm;S.vols=S.vols.filter(v=>v.email!==m);S.opps.forEach(o=>{o.signups.filter(s=>s.email===m&&!s.proof).forEach(s=>logH("cancelled",o,s));o.signups=o.signups.filter(s=>s.email!==m)});save();render();toast("Volunteer removed")})});
+}
+let vEdit=null;
+function openVol(email){
+  const v=email?S.vols.find(x=>x.email===email):null;vEdit=v?v.email:null;
+  const op=(a,x)=>a.map(i=>`<option ${x===i?"selected":""}>${i}</option>`).join("");
+  $("#vt").textContent=v?"Edit volunteer":"Add a new volunteer";
+  $("#vc").innerHTML=op(Object.keys(AREAS).concat("Other"),v&&v.city);$("#va").innerHTML=op(["Weekdays","Weekends","Evenings","Anytime"],v&&v.avail);$("#vi").innerHTML=op(CATS,v&&v.int);
+  $("#vn").value=v?v.name:"";$("#ve").value=v?v.email:"";$("#ve").readOnly=!!v;$("#vp").value=v?v.phone||"":"";$("#vs").value=v?v.skills||"":"";$("#vm").textContent="";
+  $("#vd").showModal();
+}
+$("#vx").onclick=()=>$("#vd").close();
+$("#vok").onclick=()=>{
+  const d={name:$("#vn").value.trim(),email:$("#ve").value.trim(),phone:$("#vp").value.trim(),city:$("#vc").value,skills:$("#vs").value.trim(),avail:$("#va").value,int:$("#vi").value};
+  if(!d.name||!/^\S+@\S+\.\S+$/.test(d.email)){$("#vm").textContent="Please enter a name and a valid email.";return}
+  if(!vEdit&&S.vols.some(v=>v.email.toLowerCase()===d.email.toLowerCase())){$("#vm").textContent="A volunteer with this email already exists.";return}
+  upsert(d);save();$("#vd").close();render();toast(vEdit?"Volunteer updated":"Volunteer added ✓");
+};
+function upsert(d){const i=S.vols.findIndex(v=>v.email.toLowerCase()===d.email.toLowerCase());if(i>=0)S.vols[i]={...S.vols[i],...d};else S.vols.push(d)}
+function volHours(email){return S.opps.filter(o=>o.date<today()&&o.signups.some(s=>s.email===email)).reduce((a,o)=>a+hrs(o),0)}
+
+function rMine(){
+  const rows=S.opps.flatMap(o=>o.signups.map(s=>({o,s}))).sort((a,b)=>a.o.date.localeCompare(b.o.date));
+  const mine=s=>S.me&&s.email.toLowerCase()===S.me.email.toLowerCase();
+  $("#main").innerHTML=`<div class="panel wrap"><h3 style="margin-top:0">All registrations (${rows.length})</h3><p class="meta">On or after the event day, submit proof to earn points (10 per hour).</p>${rows.length?`<table><tr><th>Volunteer</th><th>Opportunity</th><th>Date &amp; time</th><th>Status</th><th></th></tr>${rows.map(({o,s})=>`<tr><td>${esc(s.name)}<div class="meta">${esc(s.email)}</div></td><td>${esc(o.title)}<div class="meta">${esc(o.org)}</div></td><td>${fmtD(o.date)}<div class="meta">${esc(o.start)}–${esc(o.end)}</div></td><td>${s.proof?"✅ Proof submitted ("+hrs(o).toFixed(1)+" h)":o.date<=today()?"Awaiting proof":"Upcoming"}</td><td>${mine(s)&&!s.proof&&o.date<=today()?`<button class="btn" data-p="${o.id}|${esc(s.email)}">Submit proof</button> `:""}${s.proof?"":`<button class="btn alt" data-c="${o.id}|${esc(s.email)}">Cancel</button>`}</td></tr>`).join("")}</table>`:`<div class="empty">No registrations yet.</div>`}</div>`;
+  document.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>{const[id,m]=b.dataset.c.split("|");const o=S.opps.find(x=>x.id===id);const sg=o.signups.find(s=>s.email===m);if(sg)logH("cancelled",o,sg);o.signups=o.signups.filter(s=>s.email!==m);save();render();toast("Registration cancelled")});
+  document.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{const[id,m]=b.dataset.p.split("|");pf={id,email:m};$("#pn").value="";$("#pi").value="";$("#pd").showModal()});
+}
+
+function openSU(id){
+  cur=S.opps.find(o=>o.id===id);$("#dt").textContent="Register: "+cur.title;
+  $("#sm").textContent="";$("#sn").value=S.me?S.me.name:"";$("#se").value=S.me?S.me.email:"";$("#sp").value="";$("#dlg").showModal();
+}
+$("#sx").onclick=()=>$("#dlg").close();
+$("#sok").onclick=()=>{
+  const name=$("#sn").value.trim(),email=$("#se").value.trim(),phone=$("#sp").value.trim();
+  if(!name||!/^\S+@\S+\.\S+$/.test(email)){$("#sm").textContent="Please enter a name and a valid email.";return}
+  if(cur.signups.some(s=>s.email.toLowerCase()===email.toLowerCase())){$("#sm").textContent="This email is already registered.";return}
+  const clash=S.opps.find(o=>o.id!==cur.id&&o.date===cur.date&&o.signups.some(s=>s.email.toLowerCase()===email.toLowerCase())&&o.start<cur.end&&cur.start<o.end);
+  if(clash){$("#sm").textContent="Time clash with “"+clash.title+"”.";return}
+  if(cur.signups.length>=cur.needed){$("#sm").textContent="Sorry, this opportunity is full.";return}
+  cur.signups.push({name,email,phone});logH("registered",cur,{name,email});upsert({name,email,phone});if(S.me&&S.me.email.toLowerCase()===email.toLowerCase())award(5,"Joined: "+cur.title);save();$("#dlg").close();render();toast("Registered successfully ✓");
+};
+
+function exportCsv(){
+  const rows=[["Title","Organisation","Type","Date","Start","End","Location","Needed","Registered"]].concat(S.opps.map(o=>[o.title,o.org,o.cat,o.date,o.start,o.end,o.loc,o.needed,o.signups.length]));
+  const csv=rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(",")).join("\n");
+  $("#xt").value=csv;$("#xd").showModal();
+}
+
+/* ===== New features ===== */
+const AREAS={"Marina Beach":[13.05,80.2824],"T. Nagar":[13.0418,80.2341],"Adyar":[13.0012,80.2565],"Velachery":[12.9815,80.218],"Anna Nagar":[13.085,80.2101],"Guindy":[13.0067,80.2206],"Tambaram":[12.9249,80.1]};
+const ll=o=>{if(o.mode==="Remote")return null;const k=Object.keys(AREAS).find(a=>(o.loc||"").toLowerCase().includes(a.toLowerCase()));return k?AREAS[k]:null};
+const km=(a,b)=>{const r=x=>x*Math.PI/180,h=Math.sin(r(b[0]-a[0])/2)**2+Math.cos(r(a[0]))*Math.cos(r(b[0]))*Math.sin(r(b[1]-a[1])/2)**2;return 12742*Math.asin(Math.sqrt(h))};
+const catOK=o=>!F.cat||(F.cat==="@env"?o.cat==="Environment":F.cat==="@soc"?o.cat!=="Environment":o.cat===F.cat);
+const go=t=>{tab=t;render();scrollTo(0,0)};
+const upc=()=>S.opps.filter(o=>o.date>=today());
+const grid=a=>`<div class="grid">${a||'<div class="empty" style="grid-column:1/-1">Nothing matches yet.</div>'}</div>`;
+let here={area:"Marina Beach",pos:null,rad:25},fh=2,fm="",tid="",aiq="",pf=null,ed=false;
+function norm(){S.reports=S.reports||[];S.teams=S.teams||{};S.log=S.log||[];S.acts=S.acts||[];S.me=S.me||null;S.hist=S.hist||[];
+  if(!S.histInit){S.histInit=1;S.opps.forEach(o=>o.signups.forEach(s=>S.hist.push({id:uid(),ts:new Date().toISOString(),type:s.proof?"proof":"registered",name:s.name,email:s.email,title:o.title,org:o.org,date:o.date,start:o.start,end:o.end,h:+hrs(o).toFixed(2)})))}
+  if(S.me&&AREAS[S.me.city])here.area=S.me.city}
+function award(p,why){if(!S.me)return false;S.me.pts=(S.me.pts||0)+p;S.me.life=(S.me.life||0)+p;S.log.unshift({d:today(),p,why});S.log=S.log.slice(0,30);toast("+"+p+" points · "+why);return true}
+const need=()=>{if(S.me)return true;toast("Create a profile first to earn points");go("me");return false};
+function bindCards(r){r.querySelectorAll("[data-su]").forEach(b=>b.onclick=()=>openSU(b.dataset.su));r.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>ask("Delete this opportunity?",()=>{S.opps=S.opps.filter(o=>o.id!==b.dataset.del);save();render()}))}
+$("#main").addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b){if(b.dataset.cat)F.cat=b.dataset.cat;go(b.dataset.go)}});
+
+function rHome(){
+  const f=[["near","📍","Nearby volunteer opportunities","Find activities close to you, sorted by distance."],["free","⏱️","Free-time activity finder","Got 1–4 spare hours? See what fits."],["report","🗑️","Report dirty places","Flag litter or dumping and rally a clean-up."],["me","🏆","Points & rewards","Earn points for every hour and redeem rewards."],["team","👥","Volunteer team matching","Team up with people who share your interests."],["ai","✨","AI activity recommendations","Personalised picks based on your profile."]];
+  const ty=[["🌿","Environmental care","@env",["Tree planting","Beach & lake clean-ups","Waste segregation","Water conservation","Plastic-free drives"]],["🤲","Social service","@soc",["Teaching & tutoring","Food distribution","Elderly care","Health camps & blood donation","Disaster relief"]]];
+  const w=[["me","User login & profile","Create your profile with interests, skills and availability."],["near","Find nearby opportunities","Browse activities around you, closest first."],["find","Join an activity","Register in one tap — time clashes are checked for you."],["mine","Participate & submit proof","Attend, then submit a short note and photo as proof."],["me","Track your social impact","See hours, points, badges and estimated impact."]];
+  $("#main").innerHTML=`<div class="panel hero"><h2>Make your free time count</h2><p class="meta">Discover, join and track volunteering that helps your community and the environment.</p><div class="row"><button class="btn" data-go="near">Find nearby</button><button class="btn alt" data-go="me">Create profile</button></div></div>
+  <h3 class="sec">What you can do</h3><div class="grid">${f.map(([t,i,a,d])=>`<div class="card"><div style="font-size:26px">${i}</div><h3>${a}</h3><div class="meta">${d}</div><div class="row"><button class="btn alt" data-go="${t}">Open</button></div></div>`).join("")}</div>
+  <h3 class="sec">Types of volunteering activities</h3><div class="grid">${ty.map(([i,a,c,t])=>`<div class="card"><div style="font-size:26px">${i}</div><h3>${a}</h3><div class="tags">${t.map(x=>`<span class="tag">${x}</span>`).join("")}</div><div class="row"><button class="btn" data-go="find" data-cat="${c}">Browse ${a.toLowerCase()}</button></div></div>`).join("")}</div>
+  <h3 class="sec">How the application works</h3><div class="grid">${w.map(([t,a,d],i)=>`<div class="card"><div class="num">${i+1}</div><h3>${a}</h3><div class="meta">${d}</div><div class="row"><button class="btn alt" data-go="${t}">Go</button></div></div>`).join("")}</div>`;
+}
+
+function rNear(){
+  $("#main").innerHTML=`<div class="panel"><div class="f2"><div><label>Your area</label><select id="ar">${Object.keys(AREAS).map(a=>`<option ${!here.pos&&here.area===a?"selected":""}>${a}</option>`).join("")}</select></div><div><label>Within</label><select id="rd">${[5,10,25,50].map(r=>`<option value="${r}" ${here.rad===r?"selected":""}>${r} km</option>`).join("")}</select></div></div><button class="btn alt" id="gp">📡 Use my current location</button> <span class="meta">${here.pos?"Using your GPS location":"Using the centre of the selected area"}</span></div><div id="nl"></div>`;
+  const draw=()=>{const o=here.pos||AREAS[here.area];const r=upc().map(x=>({x,l:ll(x)})).filter(y=>y.l).map(y=>({x:y.x,d:km(o,y.l)})).filter(y=>y.d<=here.rad).sort((a,b)=>a.d-b.d);$("#nl").innerHTML=grid(r.map(y=>card(y.x,`<div class="meta">📏 ${y.d.toFixed(1)} km away</div>`)).join(""));bindCards($("#nl"))};
+  $("#ar").onchange=e=>{here.area=e.target.value;here.pos=null;rNear()};
+  $("#rd").onchange=e=>{here.rad=+e.target.value;draw()};
+  $("#gp").onclick=()=>navigator.geolocation?navigator.geolocation.getCurrentPosition(p=>{here.pos=[p.coords.latitude,p.coords.longitude];rNear();toast("Location found")},()=>toast("Location unavailable — pick your area instead")):toast("Location not supported");
+  draw();
+}
+
+const MIC=[["Pick up litter on your street","Environment",.5],["Plant or water a sapling nearby","Environment",.5],["Call or visit an elderly neighbour","Elderly Care",.5],["Teach a child something online","Education",1],["Cook and share an extra meal","Food & Hunger",1],["Collect old clothes or books to donate","Community",1],["Help a senior with phone or UPI basics","Tech & Skills",1]];
+function rFree(){
+  const lim=fh===4?99:fh,r=upc().filter(o=>hrs(o)<=lim&&(!fm||o.mode===fm));
+  $("#main").innerHTML=`<div class="panel"><div class="f2"><div><label>Free time I have</label><select id="fh">${[1,2,3,4].map(n=>`<option value="${n}" ${fh===n?"selected":""}>${n}${n===4?"+":""} hour${n>1?"s":""}</option>`).join("")}</select></div><div><label>Mode</label><select id="fm"><option value="">Any</option><option ${fm==="In person"?"selected":""}>In person</option><option ${fm==="Remote"?"selected":""}>Remote</option></select></div></div></div>
+  <h3 class="sec">Scheduled activities that fit (${r.length})</h3>${grid(r.map(o=>card(o)).join(""))}
+  <h3 class="sec">Do it on your own — quick activities</h3>${grid(MIC.map((m,i)=>m[2]<=lim?`<div class="card"><div><span class="tag">${m[1]}</span></div><h3>${m[0]}</h3><div class="meta">⏱ ${m[2]} h · +${m[2]*10} pts</div><div class="row"><button class="btn" data-mic="${i}">Mark as done</button></div></div>`:"").join(""))}`;
+  $("#fh").onchange=e=>{fh=+e.target.value;rFree()};$("#fm").onchange=e=>{fm=e.target.value;rFree()};
+  bindCards($("#main"));
+  document.querySelectorAll("[data-mic]").forEach(b=>b.onclick=()=>{if(!need())return;const m=MIC[b.dataset.mic];S.acts.push({d:today(),t:m[0],h:m[2],cat:m[1]});award(m[2]*10,m[0]);save();stats()});
+}
+
+function rReport(){
+  const T=["Litter / garbage","Overflowing bin","Illegal dumping","Stagnant water","Sewage leak","Plastic on beach"];
+  $("#main").innerHTML=`<form class="panel" id="rf"><h3 style="margin-top:0">Report a dirty place</h3><div class="f2"><div><label>Place / landmark *</label><input name="place" list="al" required><datalist id="al">${Object.keys(AREAS).map(a=>`<option value="${a}">`).join("")}</datalist></div><div><label>Problem</label><select name="type">${T.map(t=>`<option>${t}</option>`).join("")}</select></div><div><label>Severity</label><select name="sev"><option>Low</option><option selected>Medium</option><option>High</option></select></div><div><label>Photo (optional)</label><input type="file" name="photo" accept="image/*"></div></div><label>Details</label><textarea name="desc" rows="2"></textarea><div class="row"><button class="btn">Submit report (+15 pts)</button></div></form>
+  <h3 class="sec">Reported places (${S.reports.length})</h3>${grid(S.reports.map(r=>`<div class="card"><div><span class="tag">${esc(r.type)}</span><span class="tag">${esc(r.sev)}</span></div><h3>${esc(r.place)}</h3><div class="meta">${esc(r.desc||"No details")}<br>Reported ${fmtD(r.date)} by ${esc(r.by)}${r.photo?" · 📷 "+esc(r.photo):""}</div><div class="meta">Status: <b>${esc(r.status)}</b> · ${r.up} confirmed</div><div class="row"><button class="btn alt" data-up="${r.id}">👍 Confirm</button><button class="btn" data-cl="${r.id}" ${r.status!=="Open"?"disabled":""}>Organise clean-up</button></div></div>`).join(""))}`;
+  $("#rf").onsubmit=e=>{e.preventDefault();const d=Object.fromEntries(new FormData(e.target));S.reports.unshift({id:uid(),place:d.place,type:d.type,sev:d.sev,desc:d.desc,photo:d.photo&&d.photo.name||"",date:today(),by:S.me?S.me.name:"Anonymous",up:0,status:"Open"});if(!award(15,"Reported "+d.place))toast("Report submitted — create a profile to earn points");save();render()};
+  document.querySelectorAll("[data-up]").forEach(b=>b.onclick=()=>{S.reports.find(r=>r.id===b.dataset.up).up++;save();render()});
+  document.querySelectorAll("[data-cl]").forEach(b=>b.onclick=()=>{const r=S.reports.find(x=>x.id===b.dataset.cl);S.opps.push({id:uid(),title:"Clean-up: "+r.place,org:S.me?S.me.name:"Community",cat:"Environment",desc:r.type+" reported. Gloves and bags provided.",date:plus(7),start:"07:00",end:"09:00",loc:r.place,mode:"In person",needed:10,skills:"None needed",contact:S.me?S.me.email:"-",signups:[]});r.status="Clean-up planned";if(!award(10,"Organised a clean-up"))toast("Clean-up posted in Find opportunities");save();render()});
+}
+
+function score(v,o){const d=new Date(o.date+"T00:00").getDay(),we=d===0||d===6;let s=0,w=[];
+  if(v.int===o.cat){s+=4;w.push("interested in "+o.cat)}
+  const sk=(o.skills||"").toLowerCase().split(/[ ,]+/).filter(x=>x.length>4&&x!=="needed");if(sk.some(x=>(v.skills||"").toLowerCase().includes(x))){s+=3;w.push("matching skills")}
+  if(v.avail==="Anytime"||(v.avail==="Weekends"&&we)||(v.avail==="Weekdays"&&!we)||(v.avail==="Evenings"&&o.start>="17:00")){s+=2;w.push("free "+(v.avail||"").toLowerCase())}
+  if(v.city&&(o.loc||"").toLowerCase().includes(v.city.toLowerCase())){s+=2;w.push("lives nearby")}
+  return{s,w}}
+function rTeam(){
+  const L=upc();if(!L.some(o=>o.id===tid))tid=L[0]?L[0].id:"";const o=L.find(x=>x.id===tid),inv=S.teams[tid]||[];
+  const R=o?S.vols.filter(v=>!o.signups.some(s=>s.email===v.email)&&!(S.me&&v.email===S.me.email)).map(v=>({v,...score(v,o)})).sort((a,b)=>b.s-a.s).slice(0,6):[];
+  $("#main").innerHTML=`<div class="panel"><label>Build a team for</label><select id="to">${L.map(x=>`<option value="${x.id}" ${x.id===tid?"selected":""}>${esc(x.title)} — ${fmtD(x.date)}</option>`).join("")}</select><button class="btn alt" id="tav">➕ Add volunteer</button><p class="meta">Team so far: ${inv.length?inv.map(m=>esc((S.vols.find(v=>v.email===m)||{}).name||m)).join(", "):"nobody invited yet"}</p></div>${grid(R.map(({v,s,w})=>`<div class="card"><h3>${esc(v.name)}</h3><div class="meta">${esc(v.city||"")} · ${esc(v.avail||"")} · ${esc(v.skills||"")}</div><div class="bar"><i style="width:${Math.min(100,Math.round(s/11*100))}%"></i></div><div class="meta">${Math.min(100,Math.round(s/11*100))}% match — ${w.join(", ")||"general fit"}</div><div class="row"><button class="btn" data-iv="${esc(v.email)}" ${inv.includes(v.email)?"disabled":""}>${inv.includes(v.email)?"Invited":"Invite to team"}</button></div></div>`).join(""))}`;
+  $("#tav").onclick=()=>openVol();if($("#to"))$("#to").onchange=e=>{tid=e.target.value;rTeam()};
+  document.querySelectorAll("[data-iv]").forEach(b=>b.onclick=()=>{(S.teams[tid]=S.teams[tid]||[]).push(b.dataset.iv);save();rTeam();toast("Invitation sent")});
+}
+
+function rAI(){
+  const m=S.me,q=aiq.toLowerCase().split(/\W+/).filter(x=>x.length>2);
+  const R=upc().filter(o=>o.needed>o.signups.length&&!(m&&o.signups.some(s=>s.email===m.email))).map(o=>{let{s,w}=m?score(m,o):{s:0,w:[]};
+    const t=[o.title,o.desc,o.cat,o.org,o.skills].join(" ").toLowerCase();q.forEach(k=>{if(t.includes(k)){s+=3;w.push("matches “"+k+"”")}});
+    if(q.some(k=>/home|remote|online/.test(k))&&o.mode==="Remote"){s+=3;w.push("can be done from home")}
+    if(m&&AREAS[m.city]&&ll(o)){const d=km(AREAS[m.city],ll(o));if(d<8){s+=2;w.push(d.toFixed(1)+" km from you")}}
+    if(!w.length)w.push("upcoming with open spots");return{o,s,w}}).sort((a,b)=>b.s-a.s||a.o.date.localeCompare(b.o.date)).slice(0,4);
+  $("#main").innerHTML=`<div class="panel"><h3 style="margin-top:0">✨ Activity recommendations</h3><label>Tell us what you enjoy</label><textarea id="aq" rows="2" placeholder="e.g. teach kids, work outdoors, something from home">${esc(aiq)}</textarea><div class="row"><button class="btn" id="ag">Get recommendations</button></div><p class="meta">${m?"Based on your profile and what you type. Runs on your device.":"Create a profile for better picks."}</p></div>${grid(R.map(({o,s,w})=>card(o,`<div class="meta" style="color:var(--brand)">✨ ${Math.min(98,35+s*7)}% match — ${w.join(", ")}</div>`)).join(""))}`;
+  $("#ag").onclick=()=>{aiq=$("#aq").value;rAI()};bindCards($("#main"));
+}
+
+function pform(v){v=v||{};const op=(a,x)=>a.map(i=>`<option ${x===i?"selected":""}>${i}</option>`).join("");
+  return `<form class="panel" id="pfm"><h3 style="margin-top:0">${S.me?"Edit profile":"Log in / create your profile"}</h3><div class="f2"><div><label>Full name *</label><input name="name" required value="${esc(v.name)}"></div><div><label>Email *</label><input name="email" type="email" required value="${esc(v.email)}" ${S.me?"readonly":""}></div><div><label>Your area</label><select name="city">${op(Object.keys(AREAS),v.city)}</select></div><div><label>Main interest</label><select name="int">${op(CATS,v.int)}</select></div><div><label>Availability</label><select name="avail">${op(["Weekdays","Weekends","Evenings","Anytime"],v.avail)}</select></div><div><label>Skills</label><input name="skills" value="${esc(v.skills)}" placeholder="Teaching, first aid…"></div></div><div class="row"><button class="btn">${S.me?"Save changes":"Create profile (+10 pts)"}</button>${S.me?'<button type="button" class="btn alt" id="pcx">Cancel</button>':""}</div><p class="meta">Your data stays on this device.</p></form>`}
+function impact(){let eh=0,sh=0,n=0;S.opps.forEach(o=>o.signups.forEach(s=>{if(s.proof&&S.me&&s.email===S.me.email){n++;o.cat==="Environment"?eh+=hrs(o):sh+=hrs(o)}}));S.acts.forEach(a=>{n++;a.cat==="Environment"?eh+=a.h:sh+=a.h});return{eh,sh,n}}
+const lvl=p=>p>=500?"🌲 Forest":p>=250?"🌳 Tree":p>=100?"🌿 Sprout":"🌱 Seed";
+function rMe(){
+  const m=S.me;
+  if(!m||ed){$("#main").innerHTML=pform(m);
+    $("#pfm").onsubmit=e=>{e.preventDefault();const d=Object.fromEntries(new FormData(e.target)),first=!S.me;if(!first)d.email=S.me.email;S.me={pts:0,life:0,rewards:[],...S.me,...d};upsert({name:d.name,email:d.email,city:d.city,skills:d.skills,avail:d.avail,int:d.int});here.area=d.city;here.pos=null;ed=false;if(first)award(10,"Welcome bonus");else toast("Profile saved");save();render()};
+    if($("#pcx"))$("#pcx").onclick=()=>{ed=false;render()};return}
+  const I=impact(),RW=[["🏅","Eco Starter badge",50],["📜","Volunteer certificate",100],["🎟️","Event swag voucher",250],["🌳","Tree planted in your name",400]];
+  const st=[["Points",m.pts],["Hours volunteered",(I.eh+I.sh).toFixed(1)],["Activities done",I.n],["Places reported",S.reports.filter(r=>r.by===m.name).length],["≈ kg waste cleared",Math.round(I.eh*3)],["≈ people helped",Math.round(I.sh*4)]];
+  $("#main").innerHTML=`<div class="panel"><h3 style="margin-top:0">👤 ${esc(m.name)} · ${lvl(m.life||0)}</h3><div class="meta">${esc(m.email)} · ${esc(m.city)} · ${esc(m.int)} · ${esc(m.avail)}${m.skills?" · "+esc(m.skills):""}</div><div class="row"><button class="btn alt" id="pe">Edit profile</button><button class="btn alt" id="pr">Reset profile</button></div></div>
+  <h3 class="sec">Your social impact</h3><div class="stats">${st.map(([l,v])=>`<div class="stat"><b>${v}</b>${l}</div>`).join("")}</div><p class="meta">Impact figures are rough estimates (3 kg waste per environment hour, 4 people per social hour).</p>
+  <h3 class="sec">Rewards</h3>${grid(RW.map(([i,n,c])=>`<div class="card"><div style="font-size:26px">${i}</div><h3>${n}</h3><div class="meta">${c} points</div><div class="row"><button class="btn" data-rw="${c}|${n}" ${m.pts<c?"disabled":""}>Redeem</button></div></div>`).join(""))}
+  ${m.rewards.length?`<p class="meta">Redeemed: ${m.rewards.map(r=>esc(r.n)).join(", ")}</p>`:""}
+  <div class="panel wrap" style="margin-top:14px"><h3 style="margin-top:0">How to earn points</h3><div class="meta">Join an activity +5 · Submit proof +10 per hour · Report a dirty place +15 · Organise a clean-up +10 · Quick solo activity +10 per hour</div>${S.log.length?`<table style="margin-top:8px">${S.log.slice(0,8).map(l=>`<tr><td>${fmtD(l.d)}</td><td>${esc(l.why)}</td><td>+${l.p}</td></tr>`).join("")}</table>`:""}</div>`;
+  $("#pe").onclick=()=>{ed=true;render()};
+  $("#pr").onclick=()=>ask("Reset your profile? Your points and rewards will be cleared.",()=>{S.me=null;S.log=[];S.acts=[];save();render()});
+  document.querySelectorAll("[data-rw]").forEach(b=>b.onclick=()=>{const[c,n]=b.dataset.rw.split("|");if(m.pts<+c)return;m.pts-=+c;m.rewards.push({n,d:today()});save();render();toast("Redeemed: "+n)});
+}
+$("#px").onclick=()=>$("#pd").close();
+$("#pok").onclick=()=>{const n=$("#pn").value.trim();if(n.length<10){toast("Add a short note (10+ characters)");return}
+  const o=S.opps.find(x=>x.id===pf.id),s=o.signups.find(x=>x.email===pf.email),f=$("#pi").files[0];s.proof={note:n,file:f?f.name:"",d:today()};logH("proof",o,s);award(Math.round(hrs(o)*10),"Proof: "+o.title);save();$("#pd").close();render()};
+
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{tab=b.dataset.t;render()});
+let tt;
+function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("show"),2400)}
+function ask(m,fn){$("#cm").textContent=m;$("#cd").showModal();$("#cy").onclick=()=>{$("#cd").close();fn()};$("#cn").onclick=()=>$("#cd").close()}
+$("#xx").onclick=()=>$("#xd").close();
+$("#xc").onclick=async()=>{try{await navigator.clipboard.writeText($("#xt").value);toast("Copied to clipboard")}catch(e){$("#xt").select();toast("Press Ctrl+C to copy")}};
+$("#sf").onsubmit=e=>{e.preventDefault();$("#sok").click()};
+
+/* Live animated background */
+(function(){
+const c=$("#bg"),x=c.getContext("2d");let W,H,P=[],B=[],R=[],S=[],mx=-999,my=-999,t=0;
+const reduce=true;
+const rgb=h=>{h=h.replace("#","");return [0,2,4].map(i=>parseInt(h.substr(i,2),16))};
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const brand=()=>{const v=css("--brand");return /^#[0-9a-f]{6}$/i.test(v)?rgb(v):[31,122,90]};
+const isDark=()=>{const v=css("--bg");return /^#[0-9a-f]{6}$/i.test(v)?rgb(v).reduce((a,b)=>a+b)<300:false};
+const COL=[[31,122,90],[59,130,196],[224,160,48],[214,80,110],[60,190,170]];
+function size(){const d=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;c.width=W*d;c.height=H*d;x.setTransform(d,0,0,d,0,0);
+const n=Math.round(Math.min(70,W*H/18000));
+P=Array.from({length:n},()=>({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.8,vy:-.3-Math.random()*.8,r:1.5+Math.random()*2.5,ph:Math.random()*6.28}));
+B=[0,1,2,3,4].map(i=>({a:Math.random()*6.28,s:.012+Math.random()*.008,r:Math.max(W,H)*(.32+.06*i)}));
+const m=Math.round(Math.min(22,W*H/45000));
+S=Array.from({length:m},()=>mk(true))}
+function mk(r){return{x:Math.random()*W,y:r?Math.random()*H:H+40,s:10+Math.random()*16,v:.5+Math.random()*1.1,k:Math.random()<.5?0:1,c:COL[Math.floor(Math.random()*5)],rot:Math.random()*6.28,rs:(Math.random()-.5)*.04,ph:Math.random()*6.28}}
+function heart(s){x.beginPath();x.moveTo(0,s*.35);x.bezierCurveTo(-s*.9,-s*.2,-s*.5,-s*.8,0,-s*.35);x.bezierCurveTo(s*.5,-s*.8,s*.9,-s*.2,0,s*.35);x.fill()}
+function leaf(s){x.beginPath();x.moveTo(0,-s);x.bezierCurveTo(s*.8,-s*.4,s*.8,s*.5,0,s);x.bezierCurveTo(-s*.8,s*.5,-s*.8,-s*.4,0,-s);x.fill();x.strokeStyle="rgba(255,255,255,.35)";x.lineWidth=1;x.beginPath();x.moveTo(0,-s*.8);x.lineTo(0,s*.8);x.stroke()}
+function rays(bc,dk){
+const cx=W*.5+Math.sin(t*.4)*W*.2,a0=t*.25;
+for(let i=0;i<6;i++){const a=a0+i*1.0472,L=Math.max(W,H)*1.4,w=.14;
+const g=x.createLinearGradient(cx,-40,cx+Math.cos(a)*L,-40+Math.sin(a)*L);
+g.addColorStop(0,"rgba("+bc+","+(dk?.14:.16)+")");g.addColorStop(1,"rgba("+bc+",0)");
+x.fillStyle=g;x.beginPath();x.moveTo(cx,-40);x.lineTo(cx+Math.cos(a-w)*L,-40+Math.sin(a-w)*L);x.lineTo(cx+Math.cos(a+w)*L,-40+Math.sin(a+w)*L);x.closePath();x.fill()}}
+function waves(bc){
+[[.74,.07,.008,1.6,.12],[.82,.06,.011,-2.2,.14],[.90,.05,.015,2.8,.16]].forEach(([y,a,f,s,al])=>{
+x.beginPath();x.moveTo(0,H);
+for(let i=0;i<=W+12;i+=10)x.lineTo(i,H*y+Math.sin(i*f+t*s)*H*a*.6+Math.sin(i*f*.5-t*s*.7)*H*a*.5);
+x.lineTo(W,H);x.closePath();x.fillStyle="rgba("+bc+","+al+")";x.fill()})}
+function frame(){
+t+=.03;x.clearRect(0,0,W,H);
+const bc=brand(),dk=isDark(),al=dk?.32:.38;
+B.forEach((o,i)=>{o.a+=o.s;const cx=W*(.5+.5*Math.cos(o.a+i*1.7)),cy=H*(.5+.5*Math.sin(o.a*1.3+i*2.1)),cl=i?COL[i]:bc;
+const g=x.createRadialGradient(cx,cy,0,cx,cy,o.r);g.addColorStop(0,"rgba("+cl+","+al+")");g.addColorStop(1,"rgba("+cl+",0)");x.fillStyle=g;x.fillRect(0,0,W,H)});
+rays(bc,dk);waves(bc);
+S.forEach((s,i)=>{s.y-=s.v;s.x+=Math.sin(t*1.2+s.ph)*.9;s.rot+=s.rs;
+if(s.y<-40)S[i]=mk(false);
+x.save();x.translate(s.x,s.y);x.rotate(Math.sin(t+s.ph)*.5+s.rot);x.fillStyle="rgba("+s.c+","+(dk?.5:.45)+")";
+s.k?heart(s.s):leaf(s.s);x.restore()});
+P.forEach(p=>{p.x+=p.vx+Math.sin(t*1.5+p.ph)*.4;p.y+=p.vy;
+if(p.y<-10){p.y=H+10;p.x=Math.random()*W}if(p.x<-10)p.x=W+10;if(p.x>W+10)p.x=-10;
+const dx=p.x-mx,dy=p.y-my,d=Math.hypot(dx,dy);if(d<140&&d>0){p.x+=dx/d*3;p.y+=dy/d*3}
+const tw=.5+.5*Math.sin(t*3+p.ph),g=x.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r*5);
+g.addColorStop(0,"rgba("+bc+","+(.5+.4*tw)+")");g.addColorStop(1,"rgba("+bc+",0)");x.fillStyle=g;x.beginPath();x.arc(p.x,p.y,p.r*5,0,6.283);x.fill()});
+x.lineWidth=1;
+for(let i=0;i<P.length;i++)for(let j=i+1;j<P.length;j++){const d=Math.hypot(P[i].x-P[j].x,P[i].y-P[j].y);if(d<120){x.strokeStyle="rgba("+bc+","+((1-d/120)*.35)+")";x.beginPath();x.moveTo(P[i].x,P[i].y);x.lineTo(P[j].x,P[j].y);x.stroke()}}
+R=R.filter(r=>r.l>0);R.forEach(r=>{r.l-=.015;r.r+=3.2;x.strokeStyle="rgba("+bc+","+(r.l*.55)+")";x.lineWidth=2.5;x.beginPath();x.arc(r.x,r.y,r.r,0,6.283);x.stroke()});
+if(!reduce)requestAnimationFrame(frame)}
+addEventListener("resize",()=>{size();if(reduce)frame()});
+addEventListener("pointermove",e=>{mx=e.clientX;my=e.clientY});
+addEventListener("pointerdown",e=>{R.push({x:e.clientX,y:e.clientY,r:6,l:1})});
+addEventListener("pointerleave",()=>{mx=my=-999});
+size();frame();
+})();
+
+/* ===== Registration history ===== */
+function logH(type,o,s){S.hist=S.hist||[];S.hist.unshift({id:uid(),ts:new Date().toISOString(),type,name:s.name,email:s.email,title:o.title,org:o.org,date:o.date,start:o.start,end:o.end,h:+hrs(o).toFixed(2)});S.hist=S.hist.slice(0,500)}
+const HT={registered:["📝","Registered"],cancelled:["❌","Cancelled"],proof:["✅","Completed (proof submitted)"]};
+let HF={who:null,type:"",q:""};
+const fmtTS=t=>new Date(t).toLocaleString(undefined,{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});
+function histRows(){
+  const me=S.me,q=HF.q.toLowerCase();
+  const base=S.hist.filter(h=>HF.who==="all"||(me&&h.email.toLowerCase()===me.email.toLowerCase()));
+  return{base,rows:base.filter(h=>(!HF.type||h.type===HF.type)&&(!q||[h.title,h.org,h.name,h.email].join(" ").toLowerCase().includes(q)))};
+}
+function rHist(){
+  const me=S.me;if(HF.who===null)HF.who=me?"me":"all";
+  const{base}=histRows();
+  const n=t=>base.filter(h=>h.type===t).length,hh=base.filter(h=>h.type==="proof").reduce((a,h)=>a+h.h,0);
+  $("#main").innerHTML=`<div class="stats" style="margin-bottom:12px">${[["Registrations",n("registered")+n("proof")+n("cancelled")],["Completed",n("proof")],["Cancelled",n("cancelled")],["Hours completed",hh.toFixed(1)]].map(([l,v])=>`<div class="stat"><b>${v}</b>${l}</div>`).join("")}</div>
+  <div class="filters"><div><label>Show</label><select id="hw"><option value="me" ${HF.who==="me"?"selected":""}>My history</option><option value="all" ${HF.who==="all"?"selected":""}>Everyone</option></select></div>
+  <div><label>Action</label><select id="ht"><option value="">All actions</option>${Object.keys(HT).map(k=>`<option value="${k}" ${HF.type===k?"selected":""}>${HT[k][1]}</option>`).join("")}</select></div>
+  <div><label>Search</label><input id="hq" placeholder="Opportunity, organisation, person…" value="${esc(HF.q)}"></div></div>
+  <div class="row" style="margin:0 0 12px"><button class="btn alt" id="hx">Export CSV</button><button class="btn alt" id="hc">Clear history</button></div>
+  ${HF.who==="me"&&!me?'<p class="meta">Create a profile (Profile &amp; rewards) to keep a personal history, or switch to “Everyone”.</p>':""}
+  <div class="panel wrap" id="hl"></div>`;
+  const draw=()=>{const{rows}=histRows();
+    $("#hl").innerHTML=rows.length?`<h3 style="margin-top:0">Activity timeline (${rows.length})</h3><table><tr><th>When</th><th>Volunteer</th><th>Opportunity</th><th>Event date</th><th>Action</th></tr>${rows.map(h=>`<tr><td>${fmtTS(h.ts)}</td><td>${esc(h.name)}<div class="meta">${esc(h.email)}</div></td><td>${esc(h.title)}<div class="meta">${esc(h.org)}</div></td><td>${fmtD(h.date)}<div class="meta">${esc(h.start)}–${esc(h.end)} (${h.h} h)</div></td><td>${HT[h.type][0]} ${HT[h.type][1]}</td></tr>`).join("")}</table>`:`<div class="empty">No history yet. Register for an opportunity and it will appear here.</div>`};
+  $("#hw").onchange=e=>{HF.who=e.target.value;rHist()};
+  $("#ht").onchange=e=>{HF.type=e.target.value;draw()};
+  $("#hq").oninput=e=>{HF.q=e.target.value;draw()};
+  $("#hx").onclick=()=>{const{rows}=histRows();
+    const r=[["When","Volunteer","Email","Opportunity","Organisation","Event date","Start","End","Hours","Action"]].concat(rows.map(h=>[h.ts,h.name,h.email,h.title,h.org,h.date,h.start,h.end,h.h,HT[h.type][1]]));
+    $("#xt").value=r.map(x=>x.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(",")).join("\n");$("#xd").showModal()};
+  $("#hc").onclick=()=>ask("Clear all registration history? Your registrations and points are not affected.",()=>{S.hist=[];save();rHist();toast("History cleared")});
+  draw();
+}
+
+const THS=[["auto","🌗 Auto"],["light","☀️ Light"],["dark","🌙 Dark"]];
+let thm="auto";
+try{thm=localStorage.getItem("vof.theme")||"auto"}catch(e){}
+function applyTheme(){
+  const r=document.documentElement;
+  if(thm==="auto")r.removeAttribute("data-theme");else r.setAttribute("data-theme",thm);
+  $("#th").textContent=(THS.find(t=>t[0]===thm)||THS[0])[1];
+  applyLook();
+}
+$("#th").onclick=()=>{
+  thm=THS[(THS.findIndex(t=>t[0]===thm)+1)%3][0];
+  try{localStorage.setItem("vof.theme",thm)}catch(e){}
+  applyTheme();toast("Theme: "+thm);
+};
+const PAL={
+ Meadow:{l:['#a8efcf','#a9d4ff','#ffe39a','#ffb8cf','#c3adff'],d:['#0d4a35','#10305a','#4a3a0c','#4a1a30','#2c1a5a']},
+ Ocean:{l:['#a5e8f5','#9fc5ff','#b9f0e4','#a7b8ff','#8fe3ff'],d:['#06344a','#0b2a5c','#07433f','#1a2460','#06384f']},
+ Sunset:{l:['#ffd1a3','#ffb3b3','#ffe08a','#f9a8d4','#fdba74'],d:['#5a2a0c','#5a1a1f','#4a3a0c','#4a1a40','#5a3010']},
+ Aurora:{l:['#b6f5c8','#b4a7ff','#9be7ff','#f0b4ff','#c8ffb0'],d:['#0a4a2c','#2a1a6a','#08425a','#4a1a5a','#2a4a0c']},
+ Candy:{l:['#ffc6e0','#c6e6ff','#fff3b0','#d9c6ff','#c6ffd9'],d:['#4a1a35','#16365a','#4a440c','#2e1a5a','#0c4a2c']},
+ Calm:{l:['#e3e8e5','#d5dde0','#e8e6df','#dde0e8','#e3e8e5'],d:['#1a2320','#161e26','#201e18','#1b1c26','#1a2320']}
+};
+const ACC={Default:'',Blue:'#2563eb',Purple:'#7c3aed',Orange:'#c2570c',Pink:'#db2777',Teal:'#0f766e'};
+const SPD={Slow:'28s',Normal:'14s',Fast:'6s'};
+const OPT={pal:Object.keys(PAL),spd:Object.keys(SPD),acc:Object.keys(ACC),anim:['On','Off']};
+const LBL={pal:'Gradient colors',spd:'Animation speed',acc:'Accent color',anim:'Background animation'};
+const LOOK0={pal:'Meadow',spd:'Normal',acc:'Default',anim:'On'};
+let look={...LOOK0};
+try{look={...LOOK0,...JSON.parse(localStorage.getItem('vof.look')||'{}')}}catch(e){}
+const saveLook=()=>{try{localStorage.setItem('vof.look',JSON.stringify(look))}catch(e){}};
+const isDk=()=>thm==='dark'||(thm==='auto'&&matchMedia('(prefers-color-scheme:dark)').matches);
+function applyLook(){
+  const r=document.documentElement,p=(PAL[look.pal]||PAL.Meadow)[isDk()?'d':'l'];
+  p.forEach((c,i)=>r.style.setProperty('--g'+(i+1),c));
+  r.style.setProperty('--dur',SPD[look.spd]||'14s');
+  if(look.anim==='Off')r.setAttribute('data-anim','off');else r.removeAttribute('data-anim');
+  const a=ACC[look.acc];
+  if(a){r.style.setProperty('--brand',a);r.style.setProperty('--brandink','#fff');r.style.setProperty('--soft','color-mix(in srgb,'+a+' 16%,var(--card))')}
+  else['--brand','--brandink','--soft'].forEach(k=>r.style.removeProperty(k));
+}
+function buildCS(){
+  $('#cb').innerHTML=Object.keys(OPT).map(k=>'<h4>'+LBL[k]+'</h4><div style="display:flex;gap:6px;flex-wrap:wrap">'+OPT[k].map(v=>'<button type="button" class="chip'+(look[k]===v?' on':'')+'" data-k="'+k+'" data-v="'+v+'">'+(k==='acc'?'<i class="sw" style="background:'+(ACC[v]||'#1f7a5a')+'"></i>':'')+v+'</button>').join('')+'</div>').join('');
+}
+$('#cb').onclick=e=>{const b=e.target.closest('[data-k]');if(!b)return;look[b.dataset.k]=b.dataset.v;saveLook();applyLook();buildCS()};
+$('#cu').onclick=()=>{buildCS();$('#cs').showModal()};
+$('#cc').onclick=()=>$('#cs').close();
+$('#cr').onclick=()=>{look={...LOOK0};saveLook();applyLook();buildCS();toast('Reset to default')};
+matchMedia('(prefers-color-scheme:dark)').addEventListener('change',applyLook);
+applyTheme();
+load();norm();render();
+</script>
+</body>
+</html>
